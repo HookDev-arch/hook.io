@@ -3,25 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hook Userbot</title>
+    <title>Hook Userbot Modules</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Заголовок */
+        header {
             text-align: center;
-            background-color: #f0f0f0;
+            padding: 40px 0;
         }
-        h1 {
-            color: #333;
+
+        header h1 {
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-        p {
-            font-size: 18px;
-            color: #666;
+
+        header p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        /* Панель фильтрации */
+        .filter-panel {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .filter-panel input {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            width: 300px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .filter-panel input:focus {
+            outline: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Сетка модулей */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .module-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .module-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .module-card p {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .module-card .author {
+            font-size: 0.9rem;
+            color: #a3e635;
+            margin-bottom: 15px;
+        }
+
+        .module-card a {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #3b82f6;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .module-card a:hover {
+            background: #1e3a8a;
+        }
+
+        /* Футер */
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        footer a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Скрытие карточек при фильтрации */
+        .module-card.hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Добро пожаловать в Hook Userbot! 🚀</h1>
-    <p>Это официальный сайт Hook — мощного юзербота для Telegram.</p>
-    <p>Узнай больше о нас на <a href="https://github.com/HookDev-arch/Hook">GitHub</a>!</p>
+    <header>
+        <h1>Hook Userbot Modules 🚀</h1>
+        <p>Explore and install modules to enhance your Hook experience!</p>
+    </header>
+
+    <div class="filter-panel">
+        <input type="text" id="searchInput" placeholder="Search modules..." onkeyup="filterModules()">
+    </div>
+
+    <div class="modules-grid">
+        <!-- Пример модуля -->
+        <div class="module-card">
+            <h3>InlineForms</h3>
+            <p>Create interactive forms with buttons for easy userbot management.</p>
+            <div class="author">Author: Wiley Station</div>
+            <a href="https://github.com/HookDev-arch/Hook/blob/master/modules/inlineforms.py">Install</a>
+        </div>
+
+        <div class="module-card">
+            <h3>GalleryViewer</h3>
+            <p>View photo galleries directly in Telegram with smooth navigation.</p>
+            <div class="author">Author: HookDev Team</div>
+            <a href="https://github.com/HookDev-arch/Hook/blob/master/modules/galleryviewer.py">Install</a>
+        </div>
+
+        <div class="module-card">
+            <h3>AutoBackup</h3>
+            <p>Automatically back up your userbot database to prevent data loss.</p>
+            <div class="author">Author: Wiley Station</div>
+            <a href="https://github.com/HookDev-arch/Hook/blob/master/modules/autobackup.py">Install</a>
+        </div>
+
+        <div class="module-card">
+            <h3>InlineLogs</h3>
+            <p>Get error tracebacks directly in your Telegram chat for quick debugging.</p>
+            <div class="author">Author: HookDev Team</div>
+            <a href="https://github.com/HookDev-arch/Hook/blob/master/modules/inlinelogs.py">Install</a>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 HookDev-arch. All rights reserved. | 
+        <a href="https://github.com/HookDev-arch/Hook">GitHub</a> | 
+        <a href="https://t.me/hookdev_arch_chat">Support Chat</a>
+    </footer>
+
+    <script>
+        function filterModules() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.module-card');
+
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                if (title.includes(input) || description.includes(input)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+    </script>
 </body>
 </html>
