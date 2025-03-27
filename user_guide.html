@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hook UserBot - Полное руководство пользователя</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hook UserBot - Полное руководство пользователя</h1>
+    
+    <div class="section">
+        <h2>Общая информация</h2>
+        <p>Название проекта: <strong>Hook UserBot</strong></p>
+        <p>Версия: 1.0</p>
+        <p>Дата: 27 марта 2025</p>
+        <p>Разработчик: HookDev-arch</p>
+        <p>Репозиторий: <a href="https://github.com/HookDev-arch/Hook">github.com/HookDev-arch/Hook</a></p>
+        <p>Hook UserBot - это модульный юзербот для Telegram с веб-панелью управления, созданный на Python с использованием Telethon.</p>
+    </div>
+
+    <div class="section">
+        <h2>Требования</h2>
+        <ul>
+            <li>Python 3.7 или выше</li>
+            <li>OC: Linux (Debian, Ubuntu и пр.)
+            <li>API ID и API Hash от Telegram (<a href="https://my.telegram.org">my.telegram.org</a>)</li>
+            <li>Стабильное интернет-соединение</li>
+            <li>Современный веб-браузер для доступа к веб-панели</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Установка</h2>
+        <ol>
+            <li>Обновите и установите пакеты:
+                <pre><code>sudo apt-get update</code></pre>
+                <pre><code>sudo apt-get install git</code></pre>
+            </li>
+            <li>Склонируйте репозиторий:
+                <pre><code>wget https://raw.githubusercontent.com/HookDev-arch/Hook/refs/heads/master/install.sh && chmod 777 install.sh && ./install.sh</code></pre>
+                <pre>(В этом случае, у вас автоматически произойдёт установка всех необходимых пакетов и зависимостей)
+                <pre>Или вручную: </pre>
+                <pre>git clone https://github.com/HookDev-arch/Hook.git</pre>
+            </li>
+            <li>Перейдите в директорию проекта:
+                <pre><code>cd Hook</code></pre>
+            </li>
+            <li>Установите зависимости:
+                <pre><code>pip install -r requirements.txt</code></pre>
+            </li>
+            <li>Запустите бота:
+                <pre><code>python main.py --root --proxy-pass</code></pre>
+            </li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>Первая настройка</h2>
+        <h3>Настройка конфигурации</h3>
+        <ol>
+            <li>Перейдите по полученной из консоли WEB-ссылке формата <code>https://<unique-id>.lhr.life</code></li>
+            <li>Получите API ID и Hash на <a href="https://my.telegram.org">my.telegram.org</a></li>
+            <li>Укажите номер телефона в международном формате (например, +79991234567) или отсканируйте QR-код</li>
+        </ol>
+        <h3>Первый запуск</h3>
+        <p>При первом запуске:</p>
+        <ul>
+            <li>Скопируйте и перейдите по ссылке из консоли в формате <code>https://<unique-id>.lhr.life</code></li>
+            <li>Пройдите базовую настройку по инструкции: укажите APP ID, и Hash</li>
+            <li>Дождитесь загрузки всех модулей</li>
+            <li>Проверьте консоль на наличие ошибок</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>О клиенте</h2>
+        <p>Hook UserBot использует библиотеку Telethon для взаимодействия с Telegram API.</p>
+        <table>
+            <tr>
+                <th>Характеристика</th>
+                <th>Описание</th>
+            </tr>
+            <tr>
+                <td>Язык</td>
+                <td>Python 3</td>
+            </tr>
+            <tr>
+                <td>Библиотека</td>
+                <td>Telethon</td>
+            </tr>
+            <tr>
+                <td>Особенности</td>
+                <td>Асинхронная работа, поддержка нескольких аккаунтов</td>
+            </tr>
+            <tr>
+                <td>Ограничения</td>
+                <td>Зависит от лимитов Telegram API</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Используемые модули</h2>
+        <p>Hook UserBot поставляется с базовым набором модулей. Вот некоторые из них:</p>
+        <table>
+            <tr>
+                <th>Модуль</th>
+                <th>Описание</th>
+                <th>Команда</th>
+            </tr>
+            <tr>
+                <td>Core</td>
+                <td>Основной модуль управления</td>
+                <td>.help, .restart</td>
+            </tr>
+            <tr>
+                <td>Info</td>
+                <td>Информация о боте и пользователе</td>
+                <td>.info, .ping</td>
+            </tr>
+            <tr>
+                <td>Loader</td>
+                <td>Загрузка новых модулей</td>
+                <td>.loadmod</td>
+            </tr>
+        </table>
+        <p>Дополнительные модули можно найти в папке <code>modules/</code> или создать свои.</p>
+    </div>
+
+    <div class="section">
+        <h2>Использование</h2>
+        <p>Команды вводятся в Telegram после запуска бота:</p>
+        <ul>
+            <li><code>.help</code> - Список всех команд</li>
+            <li><code>.ping</code> - Проверка скорости ответа</li>
+            <li><code>.restart</code> - Перезапуск бота</li>
+        </ul>
+        <p>Управление через веб-панель доступно после авторизации.</p>
+    </div>
+
+    <div class="section">
+        <h2>Создание собственных модулей</h2>
+        <p>Чтобы добавить свой модуль:</p>
+        <ol>
+            <li>Создайте файл <code>имя_модуля.py</code> в папке <code>modules/</code></li>
+            <li>Используйте шаблон:
+                <pre><code>from telethon import events
+
+class MyModule:
+    def __init__(self, client):
+        self.client = client
+
+    @events.register(events.NewMessage(pattern=r"\.mycommand"))
+    async def handler(event):
+        await event.reply("Мой модуль работает!")
+                </code></pre>
+            </li>
+            <li>Загрузите модуль через <code>.loadmod</code> или перезапустите бота</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>Примечания</h2>
+        <ul>
+            <li>Не делитесь API-ключами и паролем от веб-панели</li>
+            <li>Следите за лимитами Telegram во избежание бана</li>
+            <li>Обновляйте бота командой <code>git pull</code></li>
+            <li>Сообщайте об ошибках в Issues на GitHub</li>
+        </ul>
+    </div>
+</body>
+</html>
