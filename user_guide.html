@@ -1,74 +1,246 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hook UserBot - Полное руководство пользователя!</title>
+    <meta property="og:title" content="Hook UserBot - Полное руководство пользователя">
+    <meta property="og:description" content="Полное руководство по установке и использованию Hook UserBot, созданного командой HookDev-arch.">
+    <meta property="og:image" content="https://example.com/hookuserbot-guide.jpg">
+    <meta property="og:url" content="https://hookdev-arch.github.io/hook-modules.github.io/user_guide.html">
+    <title>Hook UserBot - Полное руководство пользователя</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            line-height: 1.6;
+            overflow-x: hidden;
             padding: 20px;
-            max-width: 900px;
-            margin: 0 auto;
         }
-        h1, h2, h3 {
-            color: #333;
+        header {
+            height: 60vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            margin-bottom: 40px;
         }
-        code {
-            background-color: #f4f4f4;
-            padding: 2px 5px;
-            border-radius: 3px;
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
         }
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+        header h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            z-index: 2;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        header p {
+            font-size: 1.5em;
+            z-index: 2;
+            animation: slideInUp 1.2s ease;
         }
         .section {
-            margin-bottom: 30px;
+            max-width: 1000px;
+            margin: 0 auto 40px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 1s ease;
+        }
+        h2 {
+            font-size: 2.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 111, 97, 0.5);
+        }
+        h3 {
+            font-size: 1.8em;
+            margin: 20px 0 10px;
+        }
+        p, li {
+            font-size: 1.1em;
+            color: #ddd;
         }
         a {
-            color: #0066cc;
+            color: #ff6f61;
             text-decoration: none;
+            transition: color 0.3s;
         }
         a:hover {
+            color: #de3d6d;
             text-decoration: underline;
         }
+        pre {
+            position: relative;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 10px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        pre .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #ff6f61;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        pre .copy-btn:hover {
+            background: #de3d6d;
+        }
+        code {
+            font-family: 'Fira Code', monospace;
+        }
         table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.4s;
+        }
+        table:hover {
+            transform: rotateY(5deg) rotateX(5deg);
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 15px;
             text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         th {
-            background-color: #f2f2f2;
+            background: linear-gradient(45deg, #ff6f61, #de3d6d);
+            color: #fff;
+        }
+        td {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 30px;
+        }
+        .section strong {
+            color: #ff6f61;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ff6f61, 0 0 20px #de3d6d; }
+            to { text-shadow: 0 0 20px #ff6f61, 0 0 30px #de3d6d; }
+        }
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5em; }
+            header p { font-size: 1.2em; }
+            h2 { font-size: 2em; }
+            .section { padding: 20px; }
+            table { font-size: 0.9em; }
         }
     </style>
 </head>
 <body>
-    <h1>Hook UserBot - Полное руководство пользователя</h1>
-    
+    <header>
+        <canvas id="particle-canvas"></canvas>
+        <h1>Hook UserBot</h1>
+        <p>Полное руководство пользователя от HookDev-arch</p>
+    </header>
+
     <div class="section">
         <h2>Общая информация</h2>
-        <p>Название проекта: <strong>Hook UserBot</strong></p>
-        <p>Версия: 1.0</p>
-        <p>Дата: 27 марта 2025</p>
-        <p>Разработчик: HookDev-arch</p>
-        <p>Репозиторий: <a href="https://github.com/HookDev-arch/Hook">github.com/HookDev-arch/Hook</a></p>
-        <p>Hook UserBot - это модульный юзербот для Telegram с веб-панелью управления, созданный на Python с использованием Telethon.</p>
+        <p><strong>Название проекта:</strong> Hook UserBot</p>
+        <p><strong>Версия:</strong> 1.0</p>
+        <p><strong>Дата:</strong> 27 марта 2025</p>
+        <p><strong>Разработчик:</strong> HookDev-arch</p>
+        <p><strong>Репозиторий:</strong> <a href="https://github.com/HookDev-arch/Hook">github.com/HookDev-arch/Hook</a></p>
+        <p>Hook UserBot — модульный юзербот для Telegram с веб-панелью управления, созданный на Python с использованием библиотеки Telethon.</p>
     </div>
 
     <div class="section">
         <h2>Требования</h2>
         <ul>
             <li>Python 3.7 или выше</li>
-            <li>OC: Linux (Debian, Ubuntu и пр.)
+            <li>ОС: Linux (Debian, Ubuntu и др.)</li>
             <li>API ID и API Hash от Telegram (<a href="https://my.telegram.org">my.telegram.org</a>)</li>
             <li>Стабильное интернет-соединение</li>
             <li>Современный веб-браузер для доступа к веб-панели</li>
@@ -79,23 +251,23 @@
         <h2>Установка</h2>
         <ol>
             <li>Обновите и установите пакеты:
-                <pre><code>sudo apt-get update</code></pre>
-                <pre><code>sudo apt-get install git</code></pre>
+                <pre><code class="language-bash">sudo apt-get update</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
+                <pre><code class="language-bash">sudo apt-get install git</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
             </li>
             <li>Склонируйте репозиторий:
-                <pre><code>wget https://raw.githubusercontent.com/HookDev-arch/Hook/refs/heads/master/install.sh && chmod 777 install.sh && ./install.sh</code></pre>
-                <pre>(В этом случае, у вас автоматически произойдёт установка всех необходимых пакетов и зависимостей)
-                <pre>Или вручную: </pre>
-                <pre>git clone https://github.com/HookDev-arch/Hook.git</pre>
+                <pre><code class="language-bash">wget https://raw.githubusercontent.com/HookDev-arch/Hook/refs/heads/master/install.sh && chmod 777 install.sh && ./install.sh</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
+                <p>(Автоматическая установка всех необходимых пакетов и зависимостей)</p>
+                <p>Или вручную:</p>
+                <pre><code class="language-bash">git clone https://github.com/HookDev-arch/Hook.git</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
             </li>
             <li>Перейдите в директорию проекта:
-                <pre><code>cd Hook</code></pre>
+                <pre><code class="language-bash">cd Hook</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
             </li>
             <li>Установите зависимости:
-                <pre><code>pip install -r requirements.txt</code></pre>
+                <pre><code class="language-bash">pip install -r requirements.txt</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
             </li>
             <li>Запустите бота:
-                <pre><code>python main.py --root --proxy-pass</code></pre>
+                <pre><code class="language-bash">python main.py --root --proxy-pass</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
             </li>
         </ol>
     </div>
@@ -104,15 +276,15 @@
         <h2>Первая настройка</h2>
         <h3>Настройка конфигурации</h3>
         <ol>
-            <li>Перейдите по полученной из консоли WEB-ссылке формата <code>https://<unique-id>.lhr.life</code></li>
+            <li>Перейдите по WEB-ссылке из консоли (формата <code>https://&lt;unique-id&gt;.lhr.life</code>)</li>
             <li>Получите API ID и Hash на <a href="https://my.telegram.org">my.telegram.org</a></li>
             <li>Укажите номер телефона в международном формате (например, +79991234567) или отсканируйте QR-код</li>
         </ol>
         <h3>Первый запуск</h3>
         <p>При первом запуске:</p>
         <ul>
-            <li>Скопируйте и перейдите по ссылке из консоли в формате <code>https://<unique-id>.lhr.life</code></li>
-            <li>Пройдите базовую настройку по инструкции: укажите APP ID, и Hash</li>
+            <li>Скопируйте и перейдите по ссылке из консоли (<code>https://&lt;unique-id&gt;.lhr.life</code>)</li>
+            <li>Пройдите базовую настройку: укажите API ID и Hash</li>
             <li>Дождитесь загрузки всех модулей</li>
             <li>Проверьте консоль на наличие ошибок</li>
         </ul>
@@ -147,7 +319,7 @@
 
     <div class="section">
         <h2>Используемые модули</h2>
-        <p>Hook UserBot поставляется с базовым набором модулей. Вот некоторые из них:</p>
+        <p>Hook UserBot поставляется с базовым набором модулей:</p>
         <table>
             <tr>
                 <th>Модуль</th>
@@ -170,16 +342,16 @@
                 <td>.loadmod</td>
             </tr>
         </table>
-        <p>Дополнительные модули можно найти в папке <code>modules/</code> или создать свои.</p>
+        <p>Дополнительные модули доступны в папке <code>modules/</code> или создайте свои.</p>
     </div>
 
     <div class="section">
         <h2>Использование</h2>
         <p>Команды вводятся в Telegram после запуска бота:</p>
         <ul>
-            <li><code>.help</code> - Список всех команд</li>
-            <li><code>.ping</code> - Проверка скорости ответа</li>
-            <li><code>.restart</code> - Перезапуск бота</li>
+            <li><code>.help</code> — Список всех команд</li>
+            <li><code>.ping</code> — Проверка скорости ответа</li>
+            <li><code>.restart</code> — Перезапуск бота</li>
         </ul>
         <p>Управление через веб-панель доступно после авторизации.</p>
     </div>
@@ -190,7 +362,7 @@
         <ol>
             <li>Создайте файл <code>имя_модуля.py</code> в папке <code>modules/</code></li>
             <li>Используйте шаблон:
-                <pre><code>from telethon import events
+                <pre><code class="language-python">from telethon import events
 
 class MyModule:
     def __init__(self, client):
@@ -199,9 +371,9 @@ class MyModule:
     @events.register(events.NewMessage(pattern=r"\.mycommand"))
     async def handler(event):
         await event.reply("Мой модуль работает!")
-                </code></pre>
+</code><button class="copy-btn" onclick="copyCode(this)">Копировать</button></pre>
             </li>
-            <li>Загрузите модуль через <code>.loadmod</code> или перезапустите бота</li>
+            <li>Цагрузите модуль через <code>.loadmod</code> или перезапустите бота</li>
         </ol>
     </div>
 
@@ -211,8 +383,85 @@ class MyModule:
             <li>Не делитесь API-ключами и паролем от веб-панели</li>
             <li>Следите за лимитами Telegram во избежание бана</li>
             <li>Обновляйте бота командой <code>git pull</code></li>
-            <li>Сообщайте об ошибках в Issues на GitHub</li>
+            <li>Сообщайте об ошибках в Issues на <a href="https://github.com/HookDev-arch/Hook">GitHub</a></li>
         </ul>
     </div>
+
+    <script>
+        // Частицы в шапке
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const particles = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 5 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255, 111, 97, 0.8)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        function initParticles() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle, i) => {
+                particle.update();
+                particle.draw();
+                if (particle.size <= 0.2) {
+                    particles.splice(i, 1);
+                    particles.push(new Particle());
+                }
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        // Анимация появления при прокрутке
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0) rotateY(0) rotateX(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.section, table, pre').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+        // Функция копирования кода
+        function copyCode(button) {
+            const code = button.previousElementSibling.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = 'Скопировано!';
+                setTimeout(() => button.textContent = 'Копировать', 2000);
+            });
+        }
+    </script>
 </body>
 </html>
