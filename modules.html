@@ -1,0 +1,408 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Hook UserBot Modules">
+    <meta property="og:description" content="Explore and install modules to enhance your Hook UserBot experience, crafted by HookDev-arch.">
+    <meta property="og:image" content="https://example.com/hook-modules.jpg">
+    <meta property="og:url" content="https://hookdev-arch.github.io/hook-modules.github.io/index.html">
+    <title>Hook UserBot Modules</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Fira+Code&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        header {
+            position: relative;
+            text-align: center;
+            padding: 60px 0;
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+        header h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            z-index: 2;
+            text-shadow: 0 0 10px #ff6f61, 0 0 20px #de3d6d;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        header p {
+            font-size: 1.6em;
+            z-index: 2;
+            opacity: 0.9;
+            animation: slideInUp 1.2s ease;
+        }
+        .filter-panel {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            position: sticky;
+            top: 20px;
+            z-index: 10;
+        }
+        .filter-panel input {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 50px;
+            width: 350px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .filter-panel input:focus {
+            outline: none;
+            box-shadow: 0 6px 15px rgba(255, 111, 97, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .filter-panel input::placeholder {
+            color: #aaa;
+        }
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .module-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 111, 97, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .module-card:hover::before {
+            left: 100%;
+        }
+        .module-card:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        .module-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        .module-card p {
+            font-size: 1em;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+        .module-card .author {
+            font-size: 0.95em;
+            color: #a3e635;
+            margin-bottom: 20px;
+        }
+        .module-card a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #ff6f61, #de3d6d);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 0.95em;
+            transition: transform 0.3s ease;
+        }
+        .module-card a:hover {
+            transform: scale(1.1);
+        }
+        .module-card .copy-btn {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background: #1e3a8a;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+        .module-card .copy-btn:hover {
+            background: #ffd700;
+            color: #333;
+        }
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 60px;
+            font-size: 0.95em;
+            background: #0f2027;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        footer a {
+            color: #ffd700;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        footer a:hover {
+            color: #ff6f61;
+            text-decoration: underline;
+        }
+        .module-card.hidden {
+            display: none;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ff6f61, 0 0 20px #de3d6d; }
+            to { text-shadow: 0 0 20px #ff6f61, 0 0 30px #de3d6d; }
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5em; }
+            header p { font-size: 1.2em; }
+            .filter-panel input { width: 80%; }
+            .modules-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <canvas id="particle-canvas"></canvas>
+        <h1>Hook UserBot Modules 🚀</h1>
+        <p>Explore and install modules to supercharge your Hook UserBot!</p>
+    </header>
+
+    <div class="filter-panel">
+        <input type="text" id="searchInput" placeholder="Search modules..." onkeyup="filterModules()">
+    </div>
+
+    <div class="modules-grid">
+        <div class="module-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000">
+            <h3>Idea Catcher</h3>
+            <p>Helps you control your ideas and puts them in a separate group!</p>
+            <div class="author">Author: HookDev-arch</div>
+            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/ideacatcher.py">Install</a>
+            <button class="copy-btn" onclick="copyLink(this, 'https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/ideacatcher.py')">Copy Link</button>
+        </div>
+
+        <div class="module-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000">
+            <h3>Mood Monitor</h3>
+            <p>Analyzes your mood based on chat/private messages and shows it with a special command.</p>
+            <div class="author">Author: HookDev-arch</div>
+            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/moodmirror.py">Install</a>
+            <button class="copy-btn" onclick="copyLink(this, 'https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/moodmirror.py')">Copy Link</button>
+        </div>
+
+        <div class="module-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000">
+            <h3>RPMod</h3>
+            <p>Allows you to play RP actions directly in the selected chat.</p>
+            <div class="author">Author: HikariMods</div>
+            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/rpmod.py">Install</a>
+            <button class="copy-btn" onclick="copyLink(this, 'https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/rpmod.py')">Copy Link</button>
+        </div>
+
+        <div class="module-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000">
+            <h3>Weather</h3>
+            <p>A non-API module to check the weather through Hook UserBot.</p>
+            <div class="author">Author: Moris Summer Mods</div>
+            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/weather.py">Install</a>
+            <button class="copy-btn" onclick="copyLink(this, 'https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/weather.py')">Copy Link</button>
+        </div>
+
+        <div class="module-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000">
+            <h3>WinKey</h3>
+            <p>Generate a key to activate Windows.</p>
+            <div class="author">Author: Hikka Mods</div>
+            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/winkey.py">Install</a>
+            <button class="copy-btn" onclick="copyLink(this, 'https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/winkey.py')">Copy Link</button>
+        </div>
+
+        <div class="module-card" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000">
+            <h3>UserbotAvast</h3>
+            <p>Check modules for malware [beta].</p>
+            <div class="author">Author: Hikka Mods</div>
+            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/userbotavast.py">Install</a>
+            <button class="copy-btn" onclick="copyLink(this, 'https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/userbotavast.py')">Copy Link</button>
+        </div>
+    </div>
+
+    <footer>
+        © 2025 HookDev-arch. All rights reserved. | 
+        <a href="https://github.com/HookDev-arch/Hook">GitHub</a> | 
+        <a href="https://t.me/hookdev_arch_chat">Support Chat</a> | 
+        <a href="https://hookdev-arch.github.io/hook-modules.github.io/user_guide.html">Installation Guide</a>
+    </footer>
+
+    <script>
+        // Particle Background
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const particles = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 5 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255, 111, 97, 0.8)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        function initParticles() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle, i) => {
+                particle.update();
+                particle.draw();
+                if (particle.size <= 0.2) {
+                    particles.splice(i, 1);
+                    particles.push(new Particle());
+                }
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Filter Modules
+        function filterModules() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.module-card');
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                card.classList.toggle('hidden', !(title.includes(input) || description.includes(input)));
+            });
+        }
+
+        // Copy Link
+        function copyLink(button, url) {
+            navigator.clipboard.writeText(url).then(() => {
+                button.textContent = 'Copied!';
+                setTimeout(() => button.textContent = 'Copy Link', 2000);
+            });
+        }
+
+        // Scroll Animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.module-card, footer').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
