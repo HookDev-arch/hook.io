@@ -1,215 +1,380 @@
-<!DOCTYPE html>
-<html lang="en">
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hook Userbot Modules</title>
+    <meta property="og:title" content="Hook UserBot - Мощный и простой бот для Telegram">
+    <meta property="og:description" content="Hook UserBot - улучшенная версия Hikka UserBot. Простота для всех, регулярные обновления, размещение на серверах в Хельсинках за 499 ₽/мес.">
+    <meta property="og:image" content="https://example.com/hookuserbot.jpg">
+    <meta property="og:url" content="https://t.me/willey_station">
+    <title>Hook UserBot - Ваш идеальный помощник в Telegram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
         }
-
         body {
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             color: #fff;
-            min-height: 100vh;
-            padding: 20px;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
-
         header {
-            text-align: center;
-            padding: 40px 0;
-        }
-
-        header h1 {
-            font-size: 3rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        header p {
-            font-size: 1.2rem;
-            margin-top: 10px;
-            opacity: 0.9;
-        }
-
-        .filter-panel {
+            height: 100vh;
+            position: relative;
             display: flex;
+            flex-direction: column;
             justify-content: center;
-            margin-bottom: 30px;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
         }
-
-        .filter-panel input {
-            padding: 10px 20px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 25px;
-            width: 300px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
         }
-
-        .filter-panel input:focus {
-            outline: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
         }
-
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
+        header h1 {
+            font-size: 4em;
+            font-weight: 800;
+            z-index: 2;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        header p {
+            font-size: 1.8em;
+            margin: 20px 0;
+            z-index: 2;
+            animation: slideInUp 1.2s ease;
+        }
+        header a {
+            z-index: 2;
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #ff6f61, #de3d6d);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.3em;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        header a:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 111, 97, 0.5);
+        }
+        section {
+            padding: 80px 20px;
+            max-width: 1400px;
             margin: 0 auto;
-        }
-
-        .module-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 40px;
             backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        h2 {
+            font-size: 3em;
+            font-weight: 600;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease;
+        }
+        .feature-grid, .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .feature-card, .link-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            transition: transform 0.4s, box-shadow 0.4s;
+            transform-style: preserve-3d;
+            position: relative;
+            backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
-        .module-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        .feature-card:hover, .link-card:hover {
+            transform: rotateY(10deg) rotateX(10deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
-
-        .module-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: #ffd700;
+        .feature-card i {
+            font-size: 2.5em;
+            color: #ff6f61;
+            margin-bottom: 20px;
         }
-
-        .module-card p {
-            font-size: 1rem;
-            opacity: 0.8;
-            margin-bottom: 10px;
-        }
-
-        .module-card .author {
-            font-size: 0.9rem;
-            color: #a3e635;
-            margin-bottom: 15px;
-        }
-
-        .module-card a {
-            display: inline-block;
-            padding: 8px 15px;
-            background: #3b82f6;
-            color: #fff;
+        .link-card a {
+            color: #ff6f61;
             text-decoration: none;
+            font-size: 1.2em;
+            transition: color 0.3s;
+        }
+        .link-card a:hover {
+            color: #de3d6d;
+        }
+        .pricing-card {
+            background: linear-gradient(45deg, #ff6f61, #de3d6d);
+            padding: 40px;
             border-radius: 20px;
-            font-size: 0.9rem;
-            transition: background 0.3s ease;
+            max-width: 500px;
+            margin: 0 auto;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 30px rgba(255, 111, 97, 0.5);
         }
-
-        .module-card a:hover {
-            background: #1e3a8a;
+        .pricing-card a {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #fff;
+            color: #333;
+            text-decoration: none;
+            border-radius: 50px;
+            margin-top: 20px;
+            transition: transform 0.3s;
         }
-
+        .pricing-card a:hover {
+            transform: scale(1.1);
+        }
         footer {
+            background: #0f2027;
+            padding: 30px;
             text-align: center;
-            padding: 20px 0;
-            margin-top: 40px;
-            font-size: 0.9rem;
-            opacity: 0.7;
+            font-size: 0.9em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         footer a {
-            color: #ffd700;
+            color: #ff6f61;
             text-decoration: none;
         }
-
         footer a:hover {
             text-decoration: underline;
         }
-
-        .module-card.hidden {
-            display: none;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ff6f61, 0 0 20px #de3d6d; }
+            to { text-shadow: 0 0 20px #ff6f61, 0 0 30px #de3d6d; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5em; }
+            header p { font-size: 1.2em; }
+            h2 { font-size: 2em; }
+            .feature-grid, .links-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Hook Userbot Modules 🚀</h1>
-        <p>Explore and install modules to enhance your Hook experience!</p>
+        <canvas id="particle-canvas"></canvas>
+        <h1>Hook UserBot</h1>
+        <p>Мощный и простой Telegram-бот от команды HookDev-arch</p>
+        <a href="https://github.com/HookDev-arch/Hook" target="_blank">Попробовать сейчас</a>
     </header>
-
-    <div class="filter-panel">
-        <input type="text" id="searchInput" placeholder="Search modules..." onkeyup="filterModules()">
-    </div>
-
-    <div class="modules-grid">
-        <div class="module-card">
-            <h3>Idea Catcher</h3>
-            <p>Helps you control your ideas and puts them in a separate group!</p>
-            <div class="author">Author: HookDev-arch</div>
-            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/ideacatcher.py">Install</a>
+    <section class="features">
+        <h2>Почему Hook UserBot?</h2>
+        <p>Созданный командой HookDev-arch, Hook UserBot — это мощное и простое решение для автоматизации в Telegram, подходящее как для профессионалов, так и для обычных пользователей.</p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <i class="fas fa-rocket"></i>
+                <h3>Молниеносная скорость</h3>
+                <p>Hook UserBot обеспечивает мгновенные ответы и высокую производительность.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Безопасность данных</h3>
+                <p>Ваши данные защищены на наших серверах в Хельсинках.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-cogs"></i>
+                <h3>Гибкая настройка</h3>
+                <p>Адаптируйте бот под свои задачи с помощью модулей.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-heart"></i>
+                <h3>Простота для всех</h3>
+                <p>Интуитивный интерфейс, понятный даже новичкам.</p>
+            </div>
         </div>
-
-        <div class="module-card">
-            <h3>Mood Monitor</h3>
-            <p>This module allows Hook to analyze your mood based on your chat/private messages and shows your current mood when you call a special command:)</p>
-            <div class="author">Author: HookDev-arch</div>
-            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/moodmirror.py">Install</a>
+    </section>
+    <section class="hikka">
+        <h2>Основан на Hikka UserBot</h2>
+        <p>Hook UserBot — это улучшенная и модифицированная версия легендарного <a href="https://github.com/hikariatama/Hikka" target="_blank" style="color: #ff6f61;">Hikka UserBot</a>. После прекращения поддержки оригинала наша команда HookDev-arch взяла лучшее и сделала Hook UserBot еще мощнее, стабильнее и проще в использовании.</p>
+    </section>
+    <section class="links">
+        <h2>Ресурсы Hook UserBot</h2>
+        <div class="links-grid">
+            <div class="link-card">
+                <h3>Исходный код</h3>
+                <p>Ознакомьтесь с кодом Hook UserBot на GitHub.</p>
+                <a href="https://github.com/HookDev-arch/Hook" target="_blank">GitHub Репозиторий</a>
+            </div>
+            <div class="link-card">
+                <h3>Инструкция</h3>
+                <p>Подробное руководство по установке и настройке.</p>
+                <a href="https://hookdev-arch.github.io/hook-modules.github.io/user_guide.html" target="_blank">Руководство по установке</a>
+            </div>
+            <div class="link-card">
+                <h3>Модули</h3>
+                <p>Расширьте возможности с нашими модулями.</p>
+                <a href="https://hookdev-arch.github.io/hook-modules.github.io/index.html" target="_blank">Сайт с модулями</a>
+            </div>
         </div>
-
-        <div class="module-card">
-            <h3>RPMod</h3>
-            <p>Allows you to play RP actions directly in the selected chat.</p>
-            <div class="author">Author: HikariMods</div>
-            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/rpmod.py">Install</a>
+    </section>
+    <section class="updates">
+        <h2>Регулярные обновления</h2>
+        <p>Команда HookDev-arch постоянно работает над улучшениями, добавляя новые функции, модули и повышая стабильность Hook UserBot.</p>
+    </section>
+    <section class="partners">
+        <h2>Станьте нашим партнером</h2>
+        <p>Присоединяйтесь к HookDev-arch! Мы ищем партнеров для привлечения новых клиентов и сотрудничества. Получите выгодные условия и станьте частью нашей миссии.</p>
+        <a href="https://t.me/willey_station" target="_blank" style="display: inline-block; padding: 15px 40px; background: linear-gradient(45deg, #ff6f61, #de3d6d); color: #fff; text-decoration: none; border-radius: 50px; margin-top: 20px;">Обсудить партнерство</a>
+    </section>
+    <section class="pricing">
+        <h2>Размещение под ключ</h2>
+        <div class="pricing-card">
+            <h3>499 ₽/мес</h3>
+            <p>Полное размещение и настройка Hook UserBot на наших высокопроизводительных серверах в Хельсинках, Финляндия.</p>
+            <a href="https://t.me/willey_station" target="_blank">Заказать сейчас</a>
         </div>
-
-        <div class="module-card">
-            <h3>Weather</h3>
-            <p>A non-API module that allows you to find out the weather through a Hook.</p>
-            <div class="author">Author: Moris Summer Mods</div>
-            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/weather.py">Install</a>
-        </div>
-
-        <div class="module-card">
-            <h3>WinKey</h3>
-            <p>Generate a key to activation windows</p>
-            <div class="author">Author: Hikka Mods</div>
-            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/winkey.py">Install</a>
-        </div>
-
-        <div class="module-card">
-            <h3>UserbotAvast</h3>
-            <p>Check modules for malware [beta]</p>
-            <div class="author">Author: Hikka Mods</div>
-            <a href="https://raw.githubusercontent.com/HookDev-arch/modules_new/refs/heads/master/userbotavast.py">Install</a>
-        </div>
-    </div>
-    </div>
-
+    </section>
     <footer>
-        &copy; 2025 HookDev-arch. All rights reserved. | 
-        <a href="https://github.com/HookDev-arch/Hook">GitHub</a> | 
-        <a href="https://t.me/hookdev_arch_chat">Support Chat</a> |
-        <a href="https://hookdev-arch.github.io/hook-modules.github.io/user_guide.html">Instructions for installing modules</a>
+        <p>ООО "НЕО-ТЕХ"</p>
+        <p>ИНН: 5505075222 | КПП: 550501001 | ОГРН: 1255500006300</p>
+        <p>Связь: <a href="https://t.me/willey_station" target="_blank">@willey_station</a></p>
     </footer>
-
     <script>
-        function filterModules() {
-            const input = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.module-card');
-
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
-                if (title.includes(input) || description.includes(input)) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
+        // Частицы в шапке
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const particles = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 5 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255, 111, 97, 0.8)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        function initParticles() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle, i) => {
+                particle.update();
+                particle.draw();
+                if (particle.size <= 0.2) {
+                    particles.splice(i, 1);
+                    particles.push(new Particle());
                 }
             });
+            requestAnimationFrame(animateParticles);
         }
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        // Анимация появления при прокрутке
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0) rotateY(0) rotateX(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.feature-card, .link-card, .pricing-card, section p, section a').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
     </script>
 </body>
 </html>
